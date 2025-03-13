@@ -5,4 +5,5 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     // Add the dependency for the Google services Gradle plugin
     alias(libs.plugins.google.service) apply false
+    id("com.google.dagger.hilt.android") version "2.50" apply false
 }

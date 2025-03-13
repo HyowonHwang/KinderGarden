@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     // Add the Google services Gradle plugin
     alias(libs.plugins.google.service)
+    kotlin("kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -39,6 +41,10 @@ android {
     buildFeatures {
         compose = true
     }
+    
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
@@ -53,6 +59,21 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(platform(libs.google.firebase.bom))
     implementation(libs.google.firebase.database)
+    
+    // Material Design
+    implementation("com.google.android.material:material:1.11.0")
+    
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
+    kapt("com.google.dagger:hilt-android-compiler:2.50")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-preferences-core:1.0.0")
+    implementation(libs.androidx.datastore.core.android)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
