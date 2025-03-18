@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
@@ -17,10 +20,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import com.hwang.kindergarden.ui.screens.video.VideoContentScreen
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import com.hwang.kindergarden.ui.screens.meal.MealScreen
 
 @Composable
 fun MainScreen(modifier: Modifier) {
@@ -33,8 +38,7 @@ fun MainScreen(modifier: Modifier) {
             // 각 화면별 새로고침 로직
             when (selectedItem) {
                 0 -> {
-                    // Video 화면 새로고침
-                    // TODO: VideoContentScreen 새로고침 로직 구현
+                    // Home
                 }
                 1 -> {
                     // Search 화면 새로고침
@@ -93,7 +97,7 @@ fun MainScreen(modifier: Modifier) {
             when (selectedItem) {
                 0 -> VideoContentScreen()
                 1 -> Text("Search Screen")
-                2 -> Text("Meals")
+                2 -> MealScreen()
                 3 -> Text("My Screen")
             }
             PullRefreshIndicator(

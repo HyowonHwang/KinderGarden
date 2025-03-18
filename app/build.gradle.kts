@@ -56,13 +56,11 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material)
     implementation(libs.androidx.material3)
     implementation(platform(libs.google.firebase.bom))
     implementation(libs.google.firebase.database)
-    
-    // Material Design
-    implementation("com.google.android.material:material:1.11.0")
-    
+
     // Hilt
     implementation("com.google.dagger:hilt-android:2.50")
     implementation(libs.androidx.lifecycle.runtime.compose.android)
