@@ -74,6 +74,9 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences-core:1.0.0")
     implementation(libs.androidx.datastore.core.android)
 
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
