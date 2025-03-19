@@ -18,4 +18,11 @@ object DateUtils {
         val date = dateFormat.parse(dateString) // String → Date 변환
         return date?.time ?: 0L // Date → Epoch Milliseconds 변환
     }
+
+    fun epochMilliToDateString(epochMilli: Long): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+        val date = Date(epochMilli)
+        return dateFormat.format(date)
+    }
 }

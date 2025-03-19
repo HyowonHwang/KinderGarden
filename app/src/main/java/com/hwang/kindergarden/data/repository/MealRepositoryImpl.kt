@@ -11,8 +11,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,44 +21,63 @@ class MealRepositoryImpl @Inject constructor(
 ) : MealRepository {
     private val mealsRef = database.getReference("meals")
 
-    override suspend fun getMealsForDate(date: String): DailyMeal {
+    override suspend fun getMealsForDate(date: String): Result<DailyMeal> = try {
         val dateString = date
         val snapshot = mealsRef.child(dateString).get().await()
-        
-        return if (snapshot.exists()) {
-            val meals = snapshot.children.mapNotNull { it.getValue(MealItem::class.java) }
-            DailyMeal(
-                date = dateString,
-                meals = meals
-            )
-        } else {
-            DailyMeal(
-                date = dateString,
-                meals = emptyList()
-            )
+
+        Result.success(
+            if (snapshot.exists()) {
+                val meals = snapshot.children.mapNotNull { it.getValue(MealItem::class.java) }
+                DailyMeal(
+                    date = dateString,
+                    meals = meals
+                )
+            } else {
+                DailyMeal(
+                    date = dateString,
+                    meals = emptyList()
+                )
+            }
+        )
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    override suspend fun addMeal(meal: MealItem): Result<Boolean> {
+        val dateString = meal.date
+        val mealRef = mealsRef.child(dateString).child(meal.id)
+        return try {
+            mealRef.setValue(meal).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
-    override suspend fun addMeal(meal: MealItem) {
+    override suspend fun updateMeal(meal: MealItem): Result<Boolean> {
         val dateString = meal.date
         val mealRef = mealsRef.child(dateString).child(meal.id)
-        mealRef.setValue(meal).await()
+        return try {
+            mealRef.setValue(meal).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
-    override suspend fun updateMeal(meal: MealItem) {
-        val dateString = meal.date
-        val mealRef = mealsRef.child(dateString).child(meal.id)
-        mealRef.setValue(meal).await()
-    }
-
-    override suspend fun deleteMeal(date: String, mealId: String) {
+    override suspend fun deleteMeal(date: String, mealId: String): Result<Boolean> {
         val mealRef = mealsRef.child(date).child(mealId)
-        mealRef.removeValue().await()
+        return try {
+            mealRef.removeValue().await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override fun observeMealsForDate(date: String): Flow<DailyMeal> = callbackFlow {
         val dateString = date
-        
+
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val dailyMeal = if (snapshot.exists()) {

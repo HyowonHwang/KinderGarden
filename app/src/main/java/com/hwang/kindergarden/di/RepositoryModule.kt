@@ -4,12 +4,15 @@ import com.google.firebase.database.FirebaseDatabase
 import com.hwang.kindergarden.data.repository.VideoContentRepositoryImpl
 import com.hwang.kindergarden.domain.repository.VideoContentRepository
 import com.hwang.kindergarden.data.repository.MealRepositoryImpl
+import com.hwang.kindergarden.data.repository.UploadPhotoRepositoryImpl
 import com.hwang.kindergarden.domain.repository.MealRepository
+import com.hwang.kindergarden.domain.repository.UploadPhotoRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -31,4 +34,10 @@ object RepositoryModule {
     fun provideMealRepository(
         database: FirebaseDatabase
     ): MealRepository = MealRepositoryImpl(database)
+
+    @Provides
+    @Singleton
+    fun provideUploadPhotoRepository(
+        client: OkHttpClient
+    ) : UploadPhotoRepository = UploadPhotoRepositoryImpl(client)
 } 

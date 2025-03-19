@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 
 interface MealRepository {
-    suspend fun getMealsForDate(date: String): DailyMeal
-    suspend fun addMeal(meal: MealItem)
-    suspend fun updateMeal(meal: MealItem)
-    suspend fun deleteMeal(date: String, mealId: String)
+    suspend fun getMealsForDate(date: String): Result<DailyMeal>
+    suspend fun addMeal(meal: MealItem) : Result<Boolean>
+    suspend fun updateMeal(meal: MealItem) : Result<Boolean>
+    suspend fun deleteMeal(date: String, mealId: String) : Result<Boolean>
     fun observeMealsForDate(date: String): Flow<DailyMeal>
 }

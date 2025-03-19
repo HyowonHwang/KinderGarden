@@ -1,32 +1,30 @@
 package com.hwang.kindergarden.ui.screens.meal
 
+import MealData
 import MealItem
-import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,11 +34,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.hwang.kindergarden.presentation.viewmodel.MealViewModel
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.util.UUID
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,7 +53,7 @@ fun MealScreen(
     var selectedDate by remember { mutableStateOf(com.hwang.kindergarden.utils.DateUtils.getCurrentDateString()) }
     var showAddMealDialog by remember { mutableStateOf(false) }
     var selectedMealItem by remember { mutableStateOf<MealItem?>(null) }
-    
+
     val dailyMeals by viewModel.dailyMeals.collectAsState()
 
     // 날짜가 변경될 때마다 데이터 로드
@@ -81,7 +83,10 @@ fun MealScreen(
             DatePicker(
                 selectedDate = selectedDate,
                 onDateSelected = { date ->
-                    selectedDate = date
+                    if (selectedDate != date) {
+                        selectedDate = date
+                        viewModel.loadMealsForDate(date)
+                    }
                 }
             )
 
@@ -99,23 +104,28 @@ fun MealScreen(
             }
         }
 
-        // 식단 추가/수정 다이얼로그
+        // 식단 추가 다이얼로그
         if (showAddMealDialog) {
             MealDialog(
-                meal = selectedMealItem,
-                onDismiss = { 
+                onDismissRequest = {
                     showAddMealDialog = false
                     selectedMealItem = null
                 },
-                onSave = { meal ->
-                    val updatedMeal = meal.copy(
-                        date = selectedDate
+                onConfirm = { mealData ->
+                    val mealItem = MealItem(
+                        id = selectedMealItem?.id ?: UUID.randomUUID().toString(),
+                        date = selectedDate,
+                        type = mealData.type.value,
+                        contents = mealData.content,
+                        thumbnailUrl = mealData.thumbnailUrl,
                     )
-                    if (selectedMealItem == null) {
-                        viewModel.addMeal(updatedMeal)
+
+                    if (selectedMealItem != null) {
+                        viewModel.updateMeal(mealItem)
                     } else {
-                        viewModel.updateMeal(updatedMeal)
+                        viewModel.addMeal(mealItem)
                     }
+
                     showAddMealDialog = false
                     selectedMealItem = null
                 }
@@ -146,12 +156,26 @@ private fun MealItemCard(
             Column {
                 Text(
                     text = meal.type,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Text(
                     text = meal.contents,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
+                if (meal.thumbnailUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = meal.thumbnailUrl,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .width(50.dp)
+                            .height(50.dp)
+                            .padding(bottom = 4.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
             IconButton(onClick = onEditClick) {
                 Icon(Icons.Default.Edit, contentDescription = "Edit")
@@ -159,56 +183,3 @@ private fun MealItemCard(
         }
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MealDialog(
-    meal: MealItem?,
-    onDismiss: () -> Unit,
-    onSave: (MealItem) -> Unit
-) {
-    var type by remember { mutableStateOf(meal?.type ?: "") }
-    var contents by remember { mutableStateOf(meal?.contents ?: "") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(if (meal == null) "Add Meal" else "Edit Meal") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = type,
-                    onValueChange = { type = it },
-                    label = { Text("Meal Type") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = contents,
-                    onValueChange = { contents = it },
-                    label = { Text("Contents") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onSave(
-                        MealItem(
-                            id = meal?.id ?: "",
-                            type = meal?.type ?: "",
-                            contents = contents
-                        )
-                    )
-                }
-            ) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-} 

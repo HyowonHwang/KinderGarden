@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.collections.plus
 
 @HiltViewModel
 class MealViewModel @Inject constructor(
@@ -25,70 +24,75 @@ class MealViewModel @Inject constructor(
         loadMealsForDate(DateUtils.getCurrentDateString())
     }
 
-    fun loadMealsForDate(date : String) {
+    fun loadMealsForDate(date: String) {
         viewModelScope.launch {
-            try {
-                _dailyMeals.value = repository.getMealsForDate(date)
-            } catch (e: Exception) {
-                // TODO: 에러 처리
-                e.printStackTrace()
-            }
+            repository.getMealsForDate(date)
+                .onSuccess { dailyMeal ->
+                    _dailyMeals.value = getSortedDailyMeals(dailyMeal)
+                }
+                .onFailure {
+                    // TODO : Error 처리
+                }
         }
     }
 
     fun addMeal(meal: MealItem) {
         viewModelScope.launch {
-            try {
-                repository.addMeal(meal)
-                // 로컬 상태 업데이트
-                val currentMeals = _dailyMeals.value?.meals ?: emptyList()
-                val updatedMeals = currentMeals + meal
-                _dailyMeals.value = _dailyMeals.value?.copy(meals = updatedMeals)
-            } catch (e: Exception) {
-                // TODO: 에러 처리
-                e.printStackTrace()
-            }
+            repository.addMeal(meal)
+                .onSuccess {
+                    // update 옵져버에 위임
+                }
+                .onFailure {
+                    // TODO: 에러 처리
+                    it.printStackTrace()
+                }
         }
     }
 
     fun updateMeal(meal: MealItem) {
         viewModelScope.launch {
-            try {
-                repository.updateMeal(meal)
-                // 로컬 상태 업데이트
-                val currentMeals = _dailyMeals.value?.meals ?: emptyList()
-                val updatedMeals = currentMeals.map {
-                    if (it.id == meal.id) meal else it
+            repository.updateMeal(meal)
+                .onSuccess {
                 }
-                _dailyMeals.value = _dailyMeals.value?.copy(meals = updatedMeals)
-            } catch (e: Exception) {
-                // TODO: 에러 처리
-                e.printStackTrace()
-            }
+                .onFailure {
+                    // TODO: Error 처리
+                    it.printStackTrace()
+                }
         }
     }
 
     fun deleteMeal(mealId: String) {
         viewModelScope.launch {
-            try {
-                val dateString = _dailyMeals.value?.date ?: return@launch
-                repository.deleteMeal(dateString, mealId)
-                // 로컬 상태 업데이트
-                val currentMeals = _dailyMeals.value?.meals ?: emptyList()
-                val updatedMeals = currentMeals.filter { it.id != mealId }
-                _dailyMeals.value = _dailyMeals.value?.copy(meals = updatedMeals)
-            } catch (e: Exception) {
-                // TODO: 에러 처리
-                e.printStackTrace()
-            }
+            val dateString = _dailyMeals.value?.date ?: return@launch
+            repository.deleteMeal(dateString, mealId)
+                .onSuccess {
+                }
+                .onFailure {
+                    // TODO: Error
+                    it.printStackTrace()
+                }
         }
     }
 
     fun setupRealtimeUpdates(date: String) {
         viewModelScope.launch {
             repository.observeMealsForDate(date).collect { dailyMeal ->
-                _dailyMeals.value = dailyMeal
+                _dailyMeals.value = getSortedDailyMeals(dailyMeal)
             }
         }
+    }
+
+    private fun getSortedDailyMeals(dailyMeal: DailyMeal): DailyMeal {
+        return dailyMeal.copy(
+            meals = dailyMeal.meals.sortedWith(compareBy { mealItem ->
+                when (mealItem.type) {
+                    MealType.BREAKFAST.value -> 0
+                    MealType.LUNCH.value -> 1
+                    MealType.DINNER.value -> 2
+                    MealType.SNACK.value -> 3
+                    else -> 4
+                }
+            })
+        )
     }
 }

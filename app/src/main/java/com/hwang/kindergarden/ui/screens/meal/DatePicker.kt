@@ -17,7 +17,7 @@ fun DatePicker(
     onDateSelected: (String) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,10 +42,21 @@ fun DatePicker(
     }
 
     if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = DateUtils.dateStringToEpochMilli(selectedDate)
+        )
+
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            onDateSelected(DateUtils.epochMilliToDateString(millis))
+                        }
+                        showDatePicker = false
+                    }
+                ) {
                     Text("확인")
                 }
             },
@@ -56,9 +67,7 @@ fun DatePicker(
             }
         ) {
             DatePicker(
-                state = rememberDatePickerState(
-                    initialSelectedDateMillis = DateUtils.dateStringToEpochMilli(selectedDate)
-                ),
+                state = datePickerState,
                 showModeToggle = false
             )
         }

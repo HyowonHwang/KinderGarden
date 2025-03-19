@@ -11,6 +11,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import toDomainModel
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,11 +24,13 @@ class VideoContentRepositoryImpl @Inject constructor(
     private val videoContentsRef = database.getReference("videoContentList")
 
     override suspend fun getVideoContents(): Result<VideoContentList> = try {
-        val snapshot = videoContentsRef.get().await()
-        val contents = snapshot.children.mapNotNull { 
-            it.getValue(VideoContentDto::class.java)?.toDomainModel()
+        withTimeout(3_000) {
+            val snapshot = videoContentsRef.get().await()
+            val contents = snapshot.children.mapNotNull {
+                it.getValue(VideoContentDto::class.java)?.toDomainModel()
+            }
+            Result.success(VideoContentList(contents))
         }
-        Result.success(VideoContentList(contents))
     } catch (e: Exception) {
         Result.failure(e)
     }
