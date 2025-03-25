@@ -1,14 +1,32 @@
 package com.hwang.kindergarden.ui.screens.video
 
 import VideoContent
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -19,12 +37,24 @@ import com.hwang.kindergarden.presentation.viewmodel.VideoContentViewModel
 import com.hwang.kindergarden.presentation.viewmodel.VideoContentViewModel.UiState
 
 @Composable
-fun VideoContentScreen(
+fun VideoContentsScreen(
     modifier: Modifier = Modifier,
     viewModel: VideoContentViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedVideo by viewModel.selectedVideo.collectAsState()
+    val listState = rememberLazyListState()
+    var centerItemIndex by remember { mutableIntStateOf(-1) }
+    
+    // 스크롤 상태 변화 감지
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+            .collect { visibleItems ->
+                centerItemIndex = if (visibleItems.isNotEmpty()) {
+                    visibleItems[visibleItems.size / 2].index
+                } else -1
+            }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         when (uiState) {
@@ -33,21 +63,25 @@ fun VideoContentScreen(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             is UiState.Success -> {
                 val videos = (uiState as UiState.Success).videoContents
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    state = listState
                 ) {
                     items(videos.videoContentList) { video ->
-                        VideoContentItem(
+                        FeedVideoItem(
                             video = video,
-                            onClick = { viewModel.getVideoContent(video.id) }
+                            onClick = { viewModel.getVideoContent(video.id) },
+                            shouldPlay = videos.videoContentList.indexOf(video) == centerItemIndex
                         )
                     }
                 }
             }
+
             is UiState.Error -> {
                 ErrorContent(
                     message = (uiState as UiState.Error).message,
@@ -58,55 +92,10 @@ fun VideoContentScreen(
 
         // 선택된 비디오가 있을 때 표시할 상세 정보
         selectedVideo?.let { video ->
-            // 여기에 비디오 상세 정보 또는 플레이어 구현
             VideoDetailDialog(
                 video = video,
                 onDismiss = { viewModel.clearSelectedVideo() }
             )
-        }
-    }
-}
-
-@Composable
-private fun VideoContentItem(
-    video: VideoContent,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // 이미지 섹션
-            AsyncImage(
-                model = video.image,
-                contentDescription = video.name,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-            
-            // 텍스트 정보 섹션
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = video.name,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = video.description,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
         }
     }
 }
@@ -163,4 +152,4 @@ private fun VideoDetailDialog(
         },
         modifier = modifier
     )
-} 
+}

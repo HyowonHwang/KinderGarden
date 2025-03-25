@@ -26,14 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
-import com.hwang.kindergarden.ui.screens.video.VideoContentScreen
+import com.hwang.kindergarden.ui.screens.video.VideoContentsScreen
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.dp
-import com.hwang.kindergarden.R
 import com.hwang.kindergarden.ui.icons.BreadIcon
 import com.hwang.kindergarden.ui.screens.meal.MealScreen
 
@@ -133,7 +132,7 @@ fun MainScreen(modifier: Modifier) {
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             when (selectedItem) {
-                0 -> VideoContentScreen()
+                0 -> VideoContentsScreen()
                 1 -> Text("Search Screen")
                 2 -> MealScreen()
                 3 -> Text("My Screen")
