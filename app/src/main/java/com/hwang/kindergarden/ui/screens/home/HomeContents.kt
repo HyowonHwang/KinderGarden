@@ -26,12 +26,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.twotone.Person
+import androidx.compose.material.icons.twotone.PlayArrow
+import androidx.compose.material.icons.twotone.Search
 import com.hwang.kindergarden.ui.screens.video.VideoContentsScreen
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.unit.dp
 import com.hwang.kindergarden.ui.icons.BreadIcon
 import com.hwang.kindergarden.ui.screens.meal.MealScreen
@@ -39,7 +43,7 @@ import com.hwang.kindergarden.ui.screens.meal.MealScreen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier) {
-    var selectedItem by remember { mutableStateOf(0) }
+    var selectedItem by remember { mutableIntStateOf(0) }
     var isRefreshing by remember { mutableStateOf(false) }
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
@@ -97,13 +101,13 @@ fun MainScreen(modifier: Modifier) {
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") },
+                    icon = { Icon(Icons.TwoTone.PlayArrow ,contentDescription = "Videos") },
+                    label = { Text("Videos") },
                     selected = selectedItem == 0,
                     onClick = { selectedItem = 0 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    icon = { Icon(Icons.TwoTone.Search, contentDescription = "Search") },
                     label = { Text("Search") },
                     selected = selectedItem == 1,
                     onClick = { selectedItem = 1 }
@@ -115,7 +119,7 @@ fun MainScreen(modifier: Modifier) {
                     onClick = { selectedItem = 2 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "My") },
+                    icon = { Icon(Icons.TwoTone.Person, contentDescription = "My") },
                     label = { Text("My") },
                     selected = selectedItem == 3,
                     onClick = { selectedItem = 3 }
