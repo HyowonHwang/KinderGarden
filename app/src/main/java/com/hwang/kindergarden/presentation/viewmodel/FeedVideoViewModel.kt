@@ -23,25 +23,36 @@ class FeedVideoViewModel @Inject constructor(
 
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean>
-        get()  {
+        get() {
             return _isPlaying
         }
+    private var mediaUrl: String? = null
+    private var playbackState: Int = Player.STATE_IDLE
 
     init {
         _exoPlayer.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 _isPlaying.value = isPlaying
             }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                this@FeedVideoViewModel.playbackState = playbackState
+            }
         })
     }
 
     fun setMedia(url: String) {
+        this.mediaUrl = url
         _exoPlayer.setMediaItem(MediaItem.fromUri(url))
         _exoPlayer.prepare()
         _exoPlayer.playWhenReady = false
     }
 
     fun play() {
+        println("h2w, play(): $mediaUrl")
+        if (playbackState == Player.STATE_ENDED) {
+            _exoPlayer.seekTo(0)
+        }
         _exoPlayer.playWhenReady = true
     }
 
