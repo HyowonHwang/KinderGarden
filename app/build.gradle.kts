@@ -81,6 +81,11 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.exoplayer.hls)
 
+    // Google Maps SDK and Maps Compose
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

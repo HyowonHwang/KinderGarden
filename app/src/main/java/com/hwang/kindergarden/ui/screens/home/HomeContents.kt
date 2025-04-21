@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.twotone.LocationOn
 import androidx.compose.material.icons.twotone.Person
 import androidx.compose.material.icons.twotone.PlayArrow
 import androidx.compose.material.icons.twotone.Search
@@ -39,6 +40,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.unit.dp
 import com.hwang.kindergarden.ui.icons.BreadIcon
 import com.hwang.kindergarden.ui.screens.meal.MealScreen
+import com.hwang.kindergarden.ui.screens.place.PlaceMapScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,8 +109,8 @@ fun MainScreen(modifier: Modifier) {
                     onClick = { selectedItem = 0 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.TwoTone.Search, contentDescription = "Search") },
-                    label = { Text("Search") },
+                    icon = { Icon(Icons.TwoTone.LocationOn, contentDescription = "Place") },
+                    label = { Text("Place") },
                     selected = selectedItem == 1,
                     onClick = { selectedItem = 1 }
                 )
@@ -137,7 +139,7 @@ fun MainScreen(modifier: Modifier) {
         ) {
             when (selectedItem) {
                 0 -> VideoContentsScreen()
-                1 -> Text("Search Screen")
+                1 -> PlaceMapScreen()
                 2 -> MealScreen()
                 3 -> Text("My Screen")
             }
