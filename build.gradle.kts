@@ -6,4 +6,5 @@ plugins {
     // Add the dependency for the Google services Gradle plugin
     alias(libs.plugins.google.service) apply false
     id("com.google.dagger.hilt.android") version "2.50" apply false
+    alias(libs.plugins.secrets.gradle.plugin) apply false
 }
