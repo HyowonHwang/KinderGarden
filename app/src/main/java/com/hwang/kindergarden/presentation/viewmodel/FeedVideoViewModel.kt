@@ -1,6 +1,7 @@
 package com.hwang.kindergarden.presentation.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -49,7 +50,7 @@ class FeedVideoViewModel @Inject constructor(
     }
 
     fun play() {
-        println("h2w, play(): $mediaUrl")
+        Log.d("FeedVideoViewModel", "play(): $mediaUrl")
         if (playbackState == Player.STATE_ENDED) {
             _exoPlayer.seekTo(0)
         }
@@ -60,12 +61,23 @@ class FeedVideoViewModel @Inject constructor(
         _exoPlayer.playWhenReady = false
     }
 
-    fun togglePlayPause() {
-        _exoPlayer.playWhenReady = !_exoPlayer.isPlaying
+    /**
+     * Call this method when navigating away from the feed screen
+     * to ensure video playback stops
+     */
+    fun onNavigateAway() {
+        pause()
+        // Optionally reset player position if needed
+        release()
     }
 
     override fun onCleared() {
         super.onCleared()
+        release()
+    }
+
+    private fun release() {
         _exoPlayer.release()
+        Log.d("FeedVideoViewModel", "ViewModel cleared - releasing ExoPlayer")
     }
 }

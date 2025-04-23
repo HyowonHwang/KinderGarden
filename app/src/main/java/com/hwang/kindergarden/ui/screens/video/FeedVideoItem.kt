@@ -18,13 +18,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.hwang.kindergarden.presentation.viewmodel.FeedVideoViewModel
+import android.util.Log
 
 @Composable
 fun FeedVideoItem(
@@ -32,8 +35,18 @@ fun FeedVideoItem(
     onClick: () -> Unit,
     shouldPlay: Boolean = false,
     modifier: Modifier = Modifier,
-    viewModel: FeedVideoViewModel =  hiltViewModel(key = video.id.toString())
+    viewModel: FeedVideoViewModel = hiltViewModel(key = video.id.toString())
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // 라이프사이클 등록 (컴포저블이 컴포지션에서 제거될 때 자동으로 정리됨)
+    DisposableEffect(lifecycleOwner, viewModel) {
+        onDispose {
+            // 필요한 정리 작업이 있다면 여기서 수행
+            viewModel.onNavigateAway()
+        }
+    }
+    
     // ExoPlayer 상태 변경 감지
     val isPlaying by viewModel.isPlaying.collectAsState()
 
@@ -44,7 +57,7 @@ fun FeedVideoItem(
 
     // shouldPlay 값이 변경될 때마다 재생 상태 업데이트
     LaunchedEffect(shouldPlay) {
-        println("h2w, ${video.id}: shouldPlay=$shouldPlay")
+        Log.d("FeedVideoItem", "${video.id}: shouldPlay=$shouldPlay")
         if (shouldPlay) {
             viewModel.play()
         } else {

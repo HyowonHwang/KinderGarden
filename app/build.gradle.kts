@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.google.service)
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    alias(libs.plugins.secrets.gradle.plugin)
 }
 
 android {
@@ -20,6 +21,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Read Google Maps API key from local.properties
+        buildConfigField("String", "MAPS_API_KEY", "\"${project.findProperty("MAPS_API_KEY") ?: ""}\"")
     }
 
     buildTypes {
@@ -40,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     
     kapt {
@@ -84,7 +89,7 @@ dependencies {
     // Google Maps SDK and Maps Compose
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
